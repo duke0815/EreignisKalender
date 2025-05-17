@@ -30,13 +30,4 @@ Eine schlanke Desktop-Anwendung zum Verwalten von Geburtstagen, Jubiläen und an
 
 Wenn dir **Ereigniskalender** eine Hilfe ist, freue ich mich über eine kleine Spende, um die Weiterentwicklung zu sichern:
 
-```html
-<form action="https://www.paypal.com/donate" method="post" target="_blank" style="border:none; background:none; padding:0;">
-  <input type="hidden" name="business" value="your-paypal-email@example.com" />
-  <input type="hidden" name="no_recurring" value="0" />
-  <input type="hidden" name="currency_code" value="EUR" />
-  <button type="submit" style="border:none; background:none; padding:0;">
-    <img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif"
-         alt="Mit PayPal spenden" />
-  </button>
-</form>
+[![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/duke0815)
