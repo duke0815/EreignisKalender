@@ -1,46 +1,38 @@
-# EventReminder
+# Ereigniskalender
 
-**Version 0.5 (May 2025)**  
-A lightweight desktop app to track birthdays, anniversaries, and other yearly recurring events.
+**Version 0.5 (Mai 2025)**  
+Eine schlanke Desktop-Anwendung zum Verwalten von Geburtstagen, Jubiläen und anderen jährlich wiederkehrenden Ereignissen.
 
-## Features
+## Funktionen
 
-- View upcoming events for the next three months  
-- Add, edit or delete any event (birthdays, wedding anniversaries, milestones…)  
-- See “current age” and “days until” for each event  
-- Sort by name, date, age or days remaining  
-- Export/backup your data as CSV
+- Anzeige aller bevorstehenden Ereignisse der nächsten drei Monate  
+- Hinzufügen, Bearbeiten oder Löschen beliebiger Ereignisse (Geburtstage, Hochzeitsjubiläen, Meilensteine…)  
+- Anzeige des aktuellen Alters sowie der verbleibenden Tage bis zum Ereignis  
+- Sortierung nach Name, Datum, Alter oder verbleibenden Tagen  
 
 ## Installation
 
-1. Download the latest Windows build from the [Releases](https://github.com/YourUserName/EventReminder/releases) page.  
-2. Unzip the package into a folder of your choice.  
-3. Double-click **EventReminder.exe** to run.
+1. Lade den aktuellen Windows-Build herunter.  
+2. Entpacke das Archiv in einen Ordner deiner Wahl.  
+3. Doppelklicke auf **Ereigniskalender.exe**, um die Anwendung zu starten.
 
-## Usage
+## Nutzung
 
-- **Main Window**: Shows all events in the next 3 months.  
-- **Manage Window**: Click **All Entries** to add, edit, or remove events and comments.  
-- Changes are saved automatically to `birthdays.csv` in the same folder as the EXE.
+- **Hauptfenster**: Zeigt alle Ereignisse innerhalb der nächsten 3 Monate.  
+- **Verwaltungsfenster**: Klicke auf **Alle Einträge**, um Ereignisse und Kommentare hinzuzufügen, zu bearbeiten oder zu löschen.  
+- Änderungen werden automatisch in der Datei `birthdays.csv` im gleichen Verzeichnis wie die EXE gespeichert.
 
-## Support Development
+## Projekt unterstützen
 
-If you find **EventReminder** helpful, please consider a small donation to keep the project alive:
+Wenn dir **Ereigniskalender** eine Hilfe ist, freue ich mich über eine kleine Spende, um die Weiterentwicklung zu sichern:
 
+```html
 <form action="https://www.paypal.com/donate" method="post" target="_blank" style="border:none; background:none; padding:0;">
   <input type="hidden" name="business" value="your-paypal-email@example.com" />
   <input type="hidden" name="no_recurring" value="0" />
   <input type="hidden" name="currency_code" value="EUR" />
   <button type="submit" style="border:none; background:none; padding:0;">
     <img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif"
-         alt="Donate with PayPal" />
+         alt="Mit PayPal spenden" />
   </button>
 </form>
-
----
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a full list of updates.
-
-
