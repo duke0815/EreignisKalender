@@ -2,6 +2,10 @@
 
 **Version 0.5 (Mai 2025)**  
 Eine schlanke Desktop-Anwendung zum Verwalten von Geburtstagen, Jubiläen und anderen jährlich wiederkehrenden Ereignissen.
+![grafik](https://github.com/user-attachments/assets/18fbf90a-0af6-4b89-90db-0173b98fb437)
+
+![grafik](https://github.com/user-attachments/assets/51f48b91-dcf0-456c-89aa-ec9857151554)
+
 
 ## Funktionen
 
