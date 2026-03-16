@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ereigniskalender">
+    <title>Ereigniskalender</title>
+    <style>
+        :root {
+            --bg: #f5f5f7;
+            --card: #ffffff;
+            --accent: #007aff;
+            --danger: #ff3b30;
+            --today: #ffdddd;
+            --soon: #fff8e1;
+            --text: #1c1c1e;
+            --text2: #8e8e93;
+            --border: #e5e5ea;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        header {
+            background: var(--card);
+            padding: 16px 20px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text2);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .view {
+            display: none;
+            padding: 16px;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Search bar */
+        .search-bar {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 16px;
+            background: var(--card);
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-bar::before {
+            content: "\1F50D";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        /* Entry cards */
+        .entry-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: background 0.2s;
+        }
+
+        .entry-card.today {
+            background: var(--today);
+            border-left: 4px solid var(--danger);
+        }
+
+        .entry-card.soon {
+            background: var(--soon);
+            border-left: 4px solid #ff9500;
+        }
+
+        .entry-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .entry-card.today .entry-icon {
+            background: var(--danger);
+        }
+
+        .entry-card.soon .entry-icon {
+            background: #ff9500;
+        }
+
+        .entry-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .entry-name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .entry-detail {
+            color: var(--text2);
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        .entry-badge {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .days-badge {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .entry-card.today .days-badge {
+            color: var(--danger);
+        }
+
+        .entry-card.soon .days-badge {
+            color: #ff9500;
+        }
+
+        .days-label {
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text2);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: max(24px, env(safe-area-inset-bottom, 24px));
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            transition: transform 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 300;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card);
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px 20px;
+            padding-bottom: max(24px, env(safe-area-inset-bottom));
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            background: var(--bg);
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.7;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* All entries view */
+        .entry-card-manage {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .entry-card-manage:active {
+            background: var(--bg);
+        }
+
+        .manage-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .manage-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .manage-detail {
+            color: var(--text2);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .manage-age {
+            color: var(--text2);
+            font-size: 13px;
+        }
+
+        /* Import/Export buttons */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .toolbar .btn {
+            font-size: 14px;
+            padding: 10px 14px;
+        }
+
+        /* Section header */
+        .section-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 4px;
+        }
+
+        /* Swipe delete hint */
+        .delete-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text2);
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ereigniskalender</h1>
+</header>
+
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('upcoming')">Bevorstehend</button>
+    <button class="tab" onclick="switchTab('all')">Alle Einträge</button>
+</div>
+
+<!-- Upcoming View -->
+<div id="view-upcoming" class="view active">
+    <div id="upcoming-list"></div>
+</div>
+
+<!-- All Entries View -->
+<div id="view-all" class="view">
+    <div class="search-bar">
+        <input type="text" id="filter-input" placeholder="Suchen..." oninput="renderAll()">
+    </div>
+    <div class="toolbar">
+        <button class="btn btn-secondary" onclick="importCSV()">Importieren</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">Exportieren</button>
+    </div>
+    <div id="all-list"></div>
+    <div class="delete-hint">Eintrag antippen zum Bearbeiten</div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openModal()">+</button>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+    <div class="modal">
+        <h2 id="modal-title">Neuer Eintrag</h2>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="input-name" placeholder="Name eingeben">
+        </div>
+        <div class="form-group">
+            <label>Datum</label>
+            <input type="date" id="input-date">
+        </div>
+        <div class="form-group">
+            <label>Kommentar</label>
+            <input type="text" id="input-comment" placeholder="Optional">
+        </div>
+        <div class="modal-actions" id="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="file-import" accept=".csv" style="display:none" onchange="handleImport(event)">
+
+<script>
+    // --- Data Layer (localStorage) ---
+    const STORAGE_KEY = 'ereigniskalender_entries';
+
+    function loadEntries() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function saveEntries(entries) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    // --- Date helpers ---
+    function today() {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function daysUntilNext(dateStr) {
+        const t = today();
+        const bd = new Date(dateStr);
+        let next = new Date(t.getFullYear(), bd.getMonth(), bd.getDate());
+        if (next < t) {
+            next = new Date(t.getFullYear() + 1, bd.getMonth(), bd.getDate());
+        }
+        return Math.round((next - t) / (1000 * 60 * 60 * 24));
+    }
+
+    function ageCurrent(dateStr) {
+        const t = today();
+        const bd = new Date(dateStr);
+        let age = t.getFullYear() - bd.getFullYear();
+        const thisYearBd = new Date(t.getFullYear(), bd.getMonth(), bd.getDate());
+        if (thisYearBd > t) age--;
+        return age;
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function getInitial(name) {
+        return name ? name.charAt(0).toUpperCase() : '?';
+    }
+
+    // --- Tab switching ---
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+        if (tab === 'upcoming') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('view-upcoming').classList.add('active');
+            renderUpcoming();
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('view-all').classList.add('active');
+            renderAll();
+        }
+    }
+
+    // --- Render Upcoming ---
+    function renderUpcoming() {
+        const entries = loadEntries();
+        const container = document.getElementById('upcoming-list');
+
+        const upcoming = entries
+            .map(e => ({
+                ...e,
+                days: daysUntilNext(e.birthday),
+                age: ageCurrent(e.birthday)
+            }))
+            .filter(e => e.days <= 90)
+            .sort((a, b) => a.days - b.days);
+
+        if (upcoming.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📅</div>
+                    <p>Keine Ereignisse in den nächsten 3 Monaten</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        let addedTodayHeader = false;
+        let addedSoonHeader = false;
+        let addedLaterHeader = false;
+
+        upcoming.forEach(e => {
+            if (e.days === 0 && !addedTodayHeader) {
+                html += '<div class="section-header">Heute</div>';
+                addedTodayHeader = true;
+            } else if (e.days > 0 && e.days < 7 && !addedSoonHeader) {
+                html += '<div class="section-header">Diese Woche</div>';
+                addedSoonHeader = true;
+            } else if (e.days >= 7 && !addedLaterHeader) {
+                html += '<div class="section-header">Demnächst</div>';
+                addedLaterHeader = true;
+            }
+
+            const cls = e.days === 0 ? 'today' : e.days < 7 ? 'soon' : '';
+            const daysText = e.days === 0 ? 'Heute!' : `${e.days}`;
+            const daysLabel = e.days === 0 ? '' : e.days === 1 ? 'Tag' : 'Tage';
+
+            html += `
+                <div class="entry-card ${cls}">
+                    <div class="entry-icon">${getInitial(e.name)}</div>
+                    <div class="entry-info">
+                        <div class="entry-name">${escapeHtml(e.name)}</div>
+                        <div class="entry-detail">${formatDate(e.birthday)} · wird ${e.age + 1} Jahre</div>
+                        ${e.comment ? `<div class="entry-detail">${escapeHtml(e.comment)}</div>` : ''}
+                    </div>
+                    <div class="entry-badge">
+                        <div class="days-badge">${daysText}</div>
+                        <div class="days-label">${daysLabel}</div>
+                    </div>
+                </div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // --- Render All Entries ---
+    function renderAll() {
+        const entries = loadEntries();
+        const container = document.getElementById('all-list');
+        const filter = document.getElementById('filter-input').value.toLowerCase();
+
+        const filtered = entries
+            .map((e, i) => ({ ...e, index: i, days: daysUntilNext(e.birthday), age: ageCurrent(e.birthday) }))
+            .filter(e => {
+                if (!filter) return true;
+                return e.name.toLowerCase().includes(filter) ||
+                       (e.comment && e.comment.toLowerCase().includes(filter));
+            })
+            .sort((a, b) => a.days - b.days);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <p>${entries.length === 0 ? 'Noch keine Einträge vorhanden' : 'Keine Treffer'}</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(e => `
+            <div class="entry-card-manage" onclick="openModal(${e.index})">
+                <div class="manage-row">
+                    <div>
+                        <div class="manage-name">${escapeHtml(e.name)}</div>
+                        <div class="manage-detail">${formatDate(e.birthday)}${e.comment ? ' · ' + escapeHtml(e.comment) : ''}</div>
+                    </div>
+                    <div class="manage-age">
+                        ${e.age} Jahre<br>
+                        <span style="color:var(--accent)">Noch ${e.days} Tage</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- Modal ---
+    let editIndex = null;
+
+    function openModal(index) {
+        editIndex = index !== undefined ? index : null;
+        const modal = document.getElementById('modal-overlay');
+        const title = document.getElementById('modal-title');
+
+        if (editIndex !== null) {
+            const entries = loadEntries();
+            const e = entries[editIndex];
+            title.textContent = 'Eintrag bearbeiten';
+            document.getElementById('input-name').value = e.name;
+            document.getElementById('input-date').value = e.birthday;
+            document.getElementById('input-comment').value = e.comment || '';
+            document.getElementById('modal-actions').innerHTML = `
+                <button class="btn btn-danger" onclick="deleteEntry()">Löschen</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+            `;
+        } else {
+            title.textContent = 'Neuer Eintrag';
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-date').value = '';
+            document.getElementById('input-comment').value = '';
+            document.getElementById('modal-actions').innerHTML = `
+                <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+            `;
+        }
+
+        modal.classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('open');
+        editIndex = null;
+    }
+
+    function closeModalOutside(event) {
+        if (event.target === event.currentTarget) closeModal();
+    }
+
+    function saveEntry() {
+        const name = document.getElementById('input-name').value.trim();
+        const date = document.getElementById('input-date').value;
+        const comment = document.getElementById('input-comment').value.trim();
+
+        if (!name || !date) {
+            alert('Bitte Name und Datum eingeben.');
+            return;
+        }
+
+        const entries = loadEntries();
+
+        if (editIndex !== null) {
+            entries[editIndex] = { name, birthday: date, comment };
+        } else {
+            entries.push({ name, birthday: date, comment });
+        }
+
+        saveEntries(entries);
+        closeModal();
+        renderUpcoming();
+        renderAll();
+    }
+
+    function deleteEntry() {
+        if (editIndex === null) return;
+        if (!confirm('Eintrag wirklich löschen?')) return;
+
+        const entries = loadEntries();
+        entries.splice(editIndex, 1);
+        saveEntries(entries);
+        closeModal();
+        renderUpcoming();
+        renderAll();
+    }
+
+    // --- Import/Export ---
+    function exportCSV() {
+        const entries = loadEntries();
+        let csv = 'Name,Birthday,Comment\n';
+        entries.forEach(e => {
+            csv += `${e.name},${e.birthday},${e.comment || ''}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ereigniskalender_export.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importCSV() {
+        document.getElementById('file-import').click();
+    }
+
+    function handleImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split('\n').slice(1).filter(l => l.trim());
+            const entries = loadEntries();
+            let added = 0;
+
+            lines.forEach(line => {
+                const parts = line.split(',');
+                if (parts.length < 2) return;
+
+                const name = parts[0].trim();
+                const birthday = parts[1].trim();
+                const comment = parts.length > 2 ? parts[2].trim() : '';
+
+                // Validate date
+                if (isNaN(new Date(birthday).getTime())) return;
+
+                // Duplicate check
+                const exists = entries.some(e => e.name === name && e.birthday === birthday);
+                if (!exists) {
+                    entries.push({ name, birthday, comment });
+                    added++;
+                }
+            });
+
+            saveEntries(entries);
+            renderUpcoming();
+            renderAll();
+            alert(`Import abgeschlossen! ${added} neue Einträge hinzugefügt.`);
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    // --- Utility ---
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // --- Init ---
+    renderUpcoming();
+</script>
+
+</body>
+</html>
